@@ -1,35 +1,35 @@
-var express = require("express");
+var express = require('express');
 var router = express.Router();
 
-let roleModel = require("../schemas/roles");
+let roleModel = require('../schemas/roles');
 
+let { checkLogin } = require('../utils/authHandler.js.js');
 
-router.get("/", async function (req, res, next) {
+router.use(checkLogin);
+
+router.get('/', async function (req, res, next) {
     let roles = await roleModel.find({ isDeleted: false });
     res.send(roles);
 });
 
-
-router.get("/:id", async function (req, res, next) {
+router.get('/:id', async function (req, res, next) {
     try {
         let result = await roleModel.find({ _id: req.params.id, isDeleted: false });
         if (result.length > 0) {
             res.send(result);
-        }
-        else {
-            res.status(404).send({ message: "id not found" });
+        } else {
+            res.status(404).send({ message: 'id not found' });
         }
     } catch (error) {
-        res.status(404).send({ message: "id not found" });
+        res.status(404).send({ message: 'id not found' });
     }
 });
 
-
-router.post("/", async function (req, res, next) {
+router.post('/', async function (req, res, next) {
     try {
         let newItem = new roleModel({
             name: req.body.name,
-            description: req.body.description
+            description: req.body.description,
         });
         await newItem.save();
         res.send(newItem);
@@ -38,12 +38,12 @@ router.post("/", async function (req, res, next) {
     }
 });
 
-router.put("/:id", async function (req, res, next) {
+router.put('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
         let updatedItem = await roleModel.findByIdAndUpdate(id, req.body, { new: true });
         if (!updatedItem) {
-            return res.status(404).send({ message: "id not found" });
+            return res.status(404).send({ message: 'id not found' });
         }
         res.send(updatedItem);
     } catch (err) {
@@ -51,7 +51,7 @@ router.put("/:id", async function (req, res, next) {
     }
 });
 
-router.delete("/:id", async function (req, res, next) {
+router.delete('/:id', async function (req, res, next) {
     try {
         let id = req.params.id;
         let updatedItem = await roleModel.findByIdAndUpdate(
@@ -60,7 +60,7 @@ router.delete("/:id", async function (req, res, next) {
             { new: true }
         );
         if (!updatedItem) {
-            return res.status(404).send({ message: "id not found" });
+            return res.status(404).send({ message: 'id not found' });
         }
         res.send(updatedItem);
     } catch (err) {

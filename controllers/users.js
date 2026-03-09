@@ -1,7 +1,15 @@
-let userModel = require('../schemas/users')
+let userModel = require('../schemas/users');
+let bcrypt = require('bcrypt');
 module.exports = {
-    CreateAnUser: async function (username, password, email, role,
-        avatarUrl, fullName, status, loginCount
+    CreateAnUser: async function (
+        username,
+        password,
+        email,
+        role,
+        avatarUrl,
+        fullName,
+        status,
+        loginCount
     ) {
         let newUser = new userModel({
             username: username,
@@ -11,8 +19,8 @@ module.exports = {
             avatarUrl: avatarUrl,
             fullName: fullName,
             status: status,
-            loginCount: loginCount
-        })
+            loginCount: loginCount,
+        });
         await newUser.save();
         return newUser;
     },
@@ -24,9 +32,24 @@ module.exports = {
         return getUser;
     },
     FindUserById: async function (id) {
-        return await userModel.findOne({
-            _id: id,
-            isDeleted:false
-        }).populate('role')
-    }
-}
+        return await userModel
+            .findOne({
+                _id: id,
+                isDeleted: false,
+            })
+            .populate('role');
+    },
+    ChangePassword: async function (id, oldPassword, newPassword) {
+        let user = await userModel.findById(id);
+        if (!user) return { success: false, message: 'User không tồn tại' };
+        let isMatch = bcrypt.compareSync(oldPassword, user.password);
+        if (!isMatch) {
+            return { success: false, message: 'Mật khẩu cũ không chính xác' };
+        }
+
+        user.password = newPassword;
+        await user.save();
+
+        return { success: true };
+    },
+};
